@@ -174,7 +174,7 @@ let videoInputId = aboveContentBlock =>
 let videoFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-vimeo-form-")
 let fileFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-file-form-")
 let imageFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-image-form-")
-
+type block = [#Markdown | #File | #Image | #Embed | #VideoEmbed]
 let onBlockTypeSelect = (target, aboveContentBlock, send, addContentBlockCB, blockType, _event) =>
   switch blockType {
   | #Markdown => createMarkdownContentBlock(target, aboveContentBlock, send, addContentBlockCB)
@@ -660,7 +660,9 @@ let make = (
                 ? [#Markdown, #Image, #Embed, #VideoEmbed, #File]
                 : [#Markdown, #Image, #Embed, #File]
             )
-            |> Array.map(button(target, aboveContentBlock, send, addContentBlockCB))
+            |> Array.map((block: block) =>
+              button(target, aboveContentBlock, send, addContentBlockCB, block)
+            )
             |> React.array}
           </div>
         | UploadVideo =>
