@@ -41,7 +41,8 @@ let make = (~contentBlocks) =>
   <div className="text-base" id="learn-component">
     {contentBlocks |> ContentBlock.sort |> Array.map(block => {
       let renderedBlock = switch block |> ContentBlock.blockType {
-      | Markdown(markdown) => markdownContentBlock(markdown)
+      | Markdown(markdown, false) => markdownContentBlock(markdown)
+      | Markdown(markdown, true) => <CurriculumEditor__ContentBlockCreator.Editor />
       | File(url, title, filename) => fileContentBlock(url, title, filename)
       | Image(url, caption, width) => imageContentBlock(url, caption, width)
       | Embed(_url, embedCode, _requestType, _lastResolvedAt) =>

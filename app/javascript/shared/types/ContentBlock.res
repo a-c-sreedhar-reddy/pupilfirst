@@ -9,6 +9,7 @@ type embedCode = option<string>
 type filename = string
 type requestSource = [#User | #VimeoUpload]
 type lastResolvedAt = option<Js.Date.t>
+type wysiwyg = bool
 
 type width =
   | Auto
@@ -18,7 +19,7 @@ type width =
   | TwoFifths
 
 type blockType =
-  | Markdown(markdown)
+  | Markdown(markdown, wysiwyg)
   | File(url, title, filename)
   | Image(url, caption, width)
   | Embed(url, embedCode, requestSource, lastResolvedAt)
@@ -42,6 +43,10 @@ let widthToClass = width =>
 let decodeMarkdownContent = json => {
   open Json.Decode
   json |> field("markdown", string)
+}
+let decodeWysiwyg = json => {
+  open Json.Decode
+  json |> field("wysiwyg", bool)
 }
 let decodeFileContent = json => {
   open Json.Decode
@@ -101,7 +106,11 @@ let decode = json => {
   open Json.Decode
 
   let blockType = switch json |> field("blockType", string) {
-  | "markdown" => Markdown(json |> field("content", decodeMarkdownContent))
+  | "markdown" =>
+    Markdown(
+      json |> field("content", decodeMarkdownContent),
+      json |> field("content", decodeWysiwyg),
+    )
   | "file" =>
     let title = json |> field("content", decodeFileContent)
     let url = json |> field("fileUrl", string)
@@ -131,7 +140,7 @@ let id = t => t.id
 let blockType = t => t.blockType
 let sortIndex = t => t.sortIndex
 
-let makeMarkdownBlock = markdown => Markdown(markdown)
+let makeMarkdownBlock = markdown => Markdown(markdown, false)
 let makeImageBlock = (fileUrl, caption, width) => Image(fileUrl, caption, width)
 let makeFileBlock = (fileUrl, title, fileName) => File(fileUrl, title, fileName)
 let makeEmbedBlock = (url, embedCode, requestSource, lastResolvedAt) => Embed(
@@ -147,7 +156,14 @@ let makeFromJs = js => {
   let id = js["id"]
   let sortIndex = js["sortIndex"]
   let blockType = switch js["content"] {
-  | #MarkdownBlock(content) => Markdown(content["markdown"])
+  | #MarkdownBlock(content) =>
+    Markdown(
+      content["markdown"],
+      switch content["wysiwyg"] {
+      | Some(wysiwyg) => wysiwyg
+      | None => false
+      },
+    )
   | #FileBlock(content) => File(content["url"], content["title"], content["filename"])
   | #ImageBlock(content) =>
     Image(
@@ -217,7 +233,7 @@ let updateImageWidth = (t, width) =>
 
 let updateMarkdown = (markdown, t) =>
   switch t.blockType {
-  | Markdown(_) => {...t, blockType: Markdown(markdown)}
+  | Markdown(_, wysiwyg) => {...t, blockType: Markdown(markdown, wysiwyg)}
   | File(_)
   | Image(_)
   | Embed(_) => t
@@ -277,6 +293,7 @@ module Query = %graphql(
           }
           ... on MarkdownBlock {
             markdown
+            wysiwyg
           }
           ... on EmbedBlock {
             url

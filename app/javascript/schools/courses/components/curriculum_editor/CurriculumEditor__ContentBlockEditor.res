@@ -188,7 +188,7 @@ let onSave = (contentBlock, updateContentBlockCB, setDirtyCB, send, event) => {
     let extractor = result => result["updateFileBlock"]["contentBlock"]
 
     updateContentBlockBlock(mutation, extractor, updateContentBlockCB, setDirtyCB, send)
-  | Markdown(markdown) =>
+  | Markdown(markdown, _) =>
     let mutation = UpdateMarkdownBlockMutation.make(~id, ~markdown, ())
     let extractor = result => result["updateMarkdownBlock"]["contentBlock"]
     updateContentBlockBlock(mutation, extractor, updateContentBlockCB, setDirtyCB, send)
@@ -231,7 +231,8 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
       code => TargetContentView.embedContentBlock(code),
     )
 
-  | Markdown(markdown) =>
+  | Markdown(markdown, true) => <CurriculumEditor__ContentBlockCreator.Editor />
+  | Markdown(markdown, false) =>
     <CurriculumEditor__MarkdownBlockEditor markdown contentBlock updateContentBlockCB />
   | File(url, title, filename) =>
     <CurriculumEditor__FileBlockEditor url title filename contentBlock updateContentBlockCB />

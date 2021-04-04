@@ -42,7 +42,6 @@ module ContentBlockCreatable
     attributes = content_block.attributes
       .slice('id', 'block_type', 'content', 'sort_index')
       .with_indifferent_access
-
     if content_block.file.attached?
       attributes.merge(
         fileUrl: Rails.application.routes.url_helpers.rails_blob_path(content_block.file, only_path: true),

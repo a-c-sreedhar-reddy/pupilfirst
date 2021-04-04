@@ -6,7 +6,6 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-                <h2>Using CKEditor 5 build in React</h2>
                 <CKEditor
                     editor={ClassicEditor}
                     data="<p>Hello from CKEditor 5!</p>"
