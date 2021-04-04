@@ -46,7 +46,10 @@ let decodeMarkdownContent = json => {
 }
 let decodeWysiwyg = json => {
   open Json.Decode
-  json |> field("wysiwyg", bool)
+  switch json |> optional(field("wysiwyg", bool)) {
+  | Some(wysiwyg) => wysiwyg
+  | None => false
+  }
 }
 let decodeFileContent = json => {
   open Json.Decode
@@ -107,6 +110,7 @@ let decode = json => {
 
   let blockType = switch json |> field("blockType", string) {
   | "markdown" =>
+    Js.log(json)
     Markdown(
       json |> field("content", decodeMarkdownContent),
       json |> field("content", decodeWysiwyg),
