@@ -174,8 +174,15 @@ let videoInputId = aboveContentBlock =>
 let videoFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-vimeo-form-")
 let fileFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-file-form-")
 let imageFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-image-form-")
-
-let onBlockTypeSelect = (target, aboveContentBlock, send, addContentBlockCB, blockType, _event) =>
+type block = [#Markdown | #Image | #Embed | #VideoEmbed | #File]
+let onBlockTypeSelect = (
+  target,
+  aboveContentBlock,
+  send,
+  addContentBlockCB,
+  blockType: block,
+  _event,
+) =>
   switch blockType {
   | #Markdown => createMarkdownContentBlock(target, aboveContentBlock, send, addContentBlockCB)
   | #File
@@ -184,7 +191,7 @@ let onBlockTypeSelect = (target, aboveContentBlock, send, addContentBlockCB, blo
   | #VideoEmbed => send(ShowUploadVideoForm)
   }
 
-let button = (target, aboveContentBlock, send, addContentBlockCB, blockType) => {
+let button = (target, aboveContentBlock, send, addContentBlockCB, blockType: block) => {
   let fileId = aboveContentBlock |> fileInputId
   let imageId = aboveContentBlock |> imageInputId
   let videoId = aboveContentBlock |> videoInputId
