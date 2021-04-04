@@ -243,6 +243,7 @@ module Fragments = %graphql(
       }
       ... on MarkdownBlock {
         markdown
+        wysiwyg
       }
       ... on EmbedBlock {
         url

@@ -4,6 +4,7 @@ class CreateMarkdownContentBlockMutator < ApplicationQuery
 
   property :target_id, validates: { presence: true }
   property :above_content_block_id
+  property :wysiwyg
 
   def create_markdown_content_block
     ContentBlock.transaction do
@@ -20,7 +21,7 @@ class CreateMarkdownContentBlockMutator < ApplicationQuery
     target_version.content_blocks.create!(
       sort_index: sort_index,
       block_type: ContentBlock::BLOCK_TYPE_MARKDOWN,
-      content: { markdown: "" }
+      content: { markdown: "",wysiwyg: wysiwyg }
     )
   end
 end

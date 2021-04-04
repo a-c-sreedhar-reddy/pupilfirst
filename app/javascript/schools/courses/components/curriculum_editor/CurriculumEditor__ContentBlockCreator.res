@@ -9,8 +9,8 @@ let t = I18n.t(~scope="components.CurriculumEditor__ContentBlockCreator")
 
 module CreateMarkdownContentBlock = %graphql(
   `
-    mutation CreateMarkdownContentBlockMutation($targetId: ID!, $aboveContentBlockId: ID) {
-      createMarkdownContentBlock(targetId: $targetId, aboveContentBlockId: $aboveContentBlockId) {
+    mutation CreateMarkdownContentBlockMutation($targetId: ID!, $aboveContentBlockId: ID, $wysiwyg: Boolean!) {
+      createMarkdownContentBlock(targetId: $targetId, aboveContentBlockId: $aboveContentBlockId, wysiwyg: $wysiwyg) {
         contentBlock {
           ...ContentBlock.Fragments.AllFields
         }
@@ -142,11 +142,11 @@ let handleGraphqlCreateResponse = (aboveContentBlock, send, addContentBlockCB, c
   Js.Promise.resolve()
 }
 
-let createMarkdownContentBlock = (target, aboveContentBlock, send, addContentBlockCB) => {
+let createMarkdownContentBlock = (target, aboveContentBlock, send, addContentBlockCB, wysiwyg) => {
   send(ToggleSaving)
   let aboveContentBlockId = aboveContentBlock |> OptionUtils.map(ContentBlock.id)
   let targetId = target |> Target.id
-  CreateMarkdownContentBlock.make(~targetId, ~aboveContentBlockId?, ())
+  CreateMarkdownContentBlock.make(~targetId, ~aboveContentBlockId?, ~wysiwyg, ())
   |> GraphqlQuery.sendQuery
   |> Js.Promise.then_(result =>
     handleGraphqlCreateResponse(
@@ -188,12 +188,13 @@ let onBlockTypeSelect = (
   _event,
 ) =>
   switch blockType {
-  | #Markdown => createMarkdownContentBlock(target, aboveContentBlock, send, addContentBlockCB)
+  | #Markdown =>
+    createMarkdownContentBlock(target, aboveContentBlock, send, addContentBlockCB, false)
   | #File
   | #Image => ()
   | #Embed => send(ShowEmbedForm)
   | #VideoEmbed => send(ShowUploadVideoForm)
-  | #WYSIWYG => send(ShowWYSIWYGEditor)
+  | #WYSIWYG => createMarkdownContentBlock(target, aboveContentBlock, send, addContentBlockCB, true)
   }
 
 let button = (target, aboveContentBlock, send, addContentBlockCB, blockType: block) => {

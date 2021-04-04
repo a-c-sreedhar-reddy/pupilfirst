@@ -2,6 +2,7 @@ module Mutations
   class CreateMarkdownContentBlock < GraphQL::Schema::Mutation
     argument :target_id, ID, required: true
     argument :above_content_block_id, ID, required: false
+    argument :wysiwyg, Boolean, required: true
 
     description "Creates a markdown content block."
 
