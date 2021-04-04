@@ -49,6 +49,7 @@ type ui =
   | BlockSelector
   | EmbedForm(string)
   | UploadVideo
+  | WYSIWYGForm(string)
 
 type state = {
   ui: ui,
@@ -72,6 +73,7 @@ type action =
   | HideEmbedForm
   | HideUploadVideoForm
   | ShowUploadVideoForm
+  | ShowWYSIWYGEditor
   | UpdateUploadProgress(int)
   | UpdateEmbedUrl(string)
 
@@ -89,6 +91,7 @@ let reducer = (state, action) =>
   | ToggleVisibility =>
     let ui = switch state.ui {
     | Hidden => BlockSelector
+    | WYSIWYGForm(_)
     | BlockSelector
     | UploadVideo
     | EmbedForm(_) =>
@@ -110,6 +113,7 @@ let reducer = (state, action) =>
       error: Some("Failed to upload file. Please check message in notification, and try again."),
     }
   | ShowEmbedForm => {...state, ui: EmbedForm("")}
+  | ShowWYSIWYGEditor => {...state, ui: WYSIWYGForm("")}
   | HideEmbedForm => {...state, ui: BlockSelector}
   | ShowUploadVideoForm => {...state, ui: UploadVideo}
   | HideUploadVideoForm => {...state, ui: BlockSelector}
@@ -174,7 +178,7 @@ let videoInputId = aboveContentBlock =>
 let videoFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-vimeo-form-")
 let fileFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-file-form-")
 let imageFormId = aboveContentBlock => aboveContentBlock |> elementId("markdown-block-image-form-")
-type block = [#Markdown | #Image | #Embed | #VideoEmbed | #File]
+type block = [#Markdown | #Image | #Embed | #VideoEmbed | #File | #WYSIWYG]
 let onBlockTypeSelect = (
   target,
   aboveContentBlock,
@@ -189,6 +193,7 @@ let onBlockTypeSelect = (
   | #Image => ()
   | #Embed => send(ShowEmbedForm)
   | #VideoEmbed => send(ShowUploadVideoForm)
+  | #WYSIWYG => send(ShowWYSIWYGEditor)
   }
 
 let button = (target, aboveContentBlock, send, addContentBlockCB, blockType: block) => {
@@ -202,6 +207,7 @@ let button = (target, aboveContentBlock, send, addContentBlockCB, blockType: blo
   | #Image => ("far fa-image", t("button_labels.image"), Some(imageId))
   | #Embed => ("fas fa-code", t("button_labels.embed"), None)
   | #VideoEmbed => ("fab fa-vimeo-v", t("button_labels.video"), Some(videoId))
+  | #WYSIWYG => ("fab fa-markdown", "WYSIWYG", None)
   }
 
   <label
@@ -512,6 +518,7 @@ let uploadForm = (
 let visible = state =>
   switch state.ui {
   | Hidden => false
+  | WYSIWYGForm(_)
   | BlockSelector
   | UploadVideo
   | EmbedForm(_) => true
@@ -577,6 +584,7 @@ let buttonAboveContentBlock = (state, send, aboveContentBlock) =>
   | (BlockSelector, None) =>
     <div className="h-10" /> // Spacer.
   | (Hidden | BlockSelector, Some(contentBlock)) => toggleVisibilityButton(send, contentBlock)
+  | (WYSIWYGForm(_), _) => closeEmbedFormButton(send, aboveContentBlock)
   }
 
 let uploadVideoForm = (videoInputId, state, send) =>
@@ -647,6 +655,7 @@ let make = (
   <DisablingCover
     disabled={disablingCoverDisabled(state.saving, state.uploadProgress)}
     message={switch state.ui {
+    | WYSIWYGForm(_) => ""
     | UploadVideo => "Preparing to Upload..."
     | BlockSelector
     | EmbedForm(_)
@@ -659,13 +668,14 @@ let make = (
       <div className="content-block-creator__inner-container">
         {switch state.ui {
         | Hidden => React.null
+        | WYSIWYGForm(_a) => "WYSIWYG" |> React.string
         | BlockSelector =>
           <div
             className="content-block-creator__block-content-type text-sm hidden shadow-lg mx-auto relative bg-primary-900 rounded-lg -mt-4 z-10">
             {(
               hasVimeoAccessToken
-                ? [#Markdown, #Image, #Embed, #VideoEmbed, #File]
-                : [#Markdown, #Image, #Embed, #File]
+                ? [#Markdown, #Image, #Embed, #VideoEmbed, #File, #WYSIWYG]
+                : [#Markdown, #Image, #Embed, #File, #WYSIWYG]
             )
             |> Array.map(button(target, aboveContentBlock, send, addContentBlockCB))
             |> React.array}
