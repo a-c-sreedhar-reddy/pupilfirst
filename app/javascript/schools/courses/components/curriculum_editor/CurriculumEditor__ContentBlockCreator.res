@@ -625,7 +625,10 @@ let uploadVideoForm = (videoInputId, state, send) =>
 
 let disablingCoverDisabled = (saving, uploadProgress) =>
   uploadProgress->Belt.Option.mapWithDefault(saving, _u => false)
-
+module Editor = {
+  @module("./Editor.js") @react.component
+  external make: unit => React.element = "default"
+}
 @react.component
 let make = (
   ~target,
@@ -668,7 +671,7 @@ let make = (
       <div className="content-block-creator__inner-container">
         {switch state.ui {
         | Hidden => React.null
-        | WYSIWYGForm(_a) => "WYSIWYG" |> React.string
+        | WYSIWYGForm(_a) => <Editor />
         | BlockSelector =>
           <div
             className="content-block-creator__block-content-type text-sm hidden shadow-lg mx-auto relative bg-primary-900 rounded-lg -mt-4 z-10">
