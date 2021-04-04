@@ -66,8 +66,8 @@ module UpdateFileBlockMutation = %graphql(
 
 module UpdateMarkdownBlockMutation = %graphql(
   `
-    mutation UpdateMarkdownBlockMutation($id: ID!, $markdown: String!) {
-      updateMarkdownBlock(id: $id, markdown: $markdown) {
+    mutation UpdateMarkdownBlockMutation($id: ID!, $markdown: String!, $wysiwyg: Boolean!) {
+      updateMarkdownBlock(id: $id, markdown: $markdown, wysiwyg: $wysiwyg) {
         contentBlock {
           ...ContentBlock.Fragments.AllFields
         }
@@ -188,8 +188,8 @@ let onSave = (contentBlock, updateContentBlockCB, setDirtyCB, send, event) => {
     let extractor = result => result["updateFileBlock"]["contentBlock"]
 
     updateContentBlockBlock(mutation, extractor, updateContentBlockCB, setDirtyCB, send)
-  | Markdown(markdown, _) =>
-    let mutation = UpdateMarkdownBlockMutation.make(~id, ~markdown, ())
+  | Markdown(markdown, wysiwyg) =>
+    let mutation = UpdateMarkdownBlockMutation.make(~id, ~markdown, ~wysiwyg, ())
     let extractor = result => result["updateMarkdownBlock"]["contentBlock"]
     updateContentBlockBlock(mutation, extractor, updateContentBlockCB, setDirtyCB, send)
   | Image(_url, caption, imageWidth) =>
@@ -231,7 +231,11 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
       code => TargetContentView.embedContentBlock(code),
     )
 
-  | Markdown(markdown, true) => <CurriculumEditor__ContentBlockCreator.Editor />
+  | Markdown(markdown, true) =>
+    <CurriculumEditor__ContentBlockCreator.Editor
+      data=markdown
+      onChange={CurriculumEditor__MarkdownBlockEditor.onChange(contentBlock, updateContentBlockCB)}
+    />
   | Markdown(markdown, false) =>
     <CurriculumEditor__MarkdownBlockEditor markdown contentBlock updateContentBlockCB />
   | File(url, title, filename) =>

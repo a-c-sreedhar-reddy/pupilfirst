@@ -42,7 +42,8 @@ let make = (~contentBlocks) =>
     {contentBlocks |> ContentBlock.sort |> Array.map(block => {
       let renderedBlock = switch block |> ContentBlock.blockType {
       | Markdown(markdown, false) => markdownContentBlock(markdown)
-      | Markdown(markdown, true) => <CurriculumEditor__ContentBlockCreator.Editor />
+      | Markdown(markdown, true) =>
+        <CurriculumEditor__ContentBlockCreator.Editor data=markdown onChange={_ => ()} />
       | File(url, title, filename) => fileContentBlock(url, title, filename)
       | Image(url, caption, width) => imageContentBlock(url, caption, width)
       | Embed(_url, embedCode, _requestType, _lastResolvedAt) =>

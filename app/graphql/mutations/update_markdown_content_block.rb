@@ -2,7 +2,8 @@ module Mutations
   class UpdateMarkdownContentBlock < GraphQL::Schema::Mutation
     argument :id, ID, required: true
     argument :markdown, String, required: false
-
+    argument :wysiwyg, Boolean, required: true
+    
     description "Updates the markdown content of a markdown block."
 
     field :content_block, Types::ContentBlockType, null: true

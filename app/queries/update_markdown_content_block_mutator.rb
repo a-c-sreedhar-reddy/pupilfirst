@@ -4,12 +4,13 @@ class UpdateMarkdownContentBlockMutator < ApplicationQuery
 
   property :id, validates: { presence: true }
   property :markdown, validates: { length: { maximum: 10_000 } }
-
+  property :wysiwyg
+  
   validate :must_be_a_markdown_block
   validate :must_be_latest_version
 
   def update_markdown_content_block
-    content_block.update!(content: { markdown: markdown.strip })
+    content_block.update!(content: { markdown: markdown.strip , wysiwyg: wysiwyg })
     target_version.touch # rubocop:disable Rails/SkipsModelValidations
     json_attributes
   end

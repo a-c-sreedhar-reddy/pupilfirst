@@ -49,7 +49,6 @@ type ui =
   | BlockSelector
   | EmbedForm(string)
   | UploadVideo
-  | WYSIWYGForm(string)
 
 type state = {
   ui: ui,
@@ -73,7 +72,6 @@ type action =
   | HideEmbedForm
   | HideUploadVideoForm
   | ShowUploadVideoForm
-  | ShowWYSIWYGEditor
   | UpdateUploadProgress(int)
   | UpdateEmbedUrl(string)
 
@@ -91,7 +89,6 @@ let reducer = (state, action) =>
   | ToggleVisibility =>
     let ui = switch state.ui {
     | Hidden => BlockSelector
-    | WYSIWYGForm(_)
     | BlockSelector
     | UploadVideo
     | EmbedForm(_) =>
@@ -113,7 +110,6 @@ let reducer = (state, action) =>
       error: Some("Failed to upload file. Please check message in notification, and try again."),
     }
   | ShowEmbedForm => {...state, ui: EmbedForm("")}
-  | ShowWYSIWYGEditor => {...state, ui: WYSIWYGForm("")}
   | HideEmbedForm => {...state, ui: BlockSelector}
   | ShowUploadVideoForm => {...state, ui: UploadVideo}
   | HideUploadVideoForm => {...state, ui: BlockSelector}
@@ -519,7 +515,6 @@ let uploadForm = (
 let visible = state =>
   switch state.ui {
   | Hidden => false
-  | WYSIWYGForm(_)
   | BlockSelector
   | UploadVideo
   | EmbedForm(_) => true
@@ -585,7 +580,6 @@ let buttonAboveContentBlock = (state, send, aboveContentBlock) =>
   | (BlockSelector, None) =>
     <div className="h-10" /> // Spacer.
   | (Hidden | BlockSelector, Some(contentBlock)) => toggleVisibilityButton(send, contentBlock)
-  | (WYSIWYGForm(_), _) => closeEmbedFormButton(send, aboveContentBlock)
   }
 
 let uploadVideoForm = (videoInputId, state, send) =>
@@ -628,7 +622,7 @@ let disablingCoverDisabled = (saving, uploadProgress) =>
   uploadProgress->Belt.Option.mapWithDefault(saving, _u => false)
 module Editor = {
   @module("./Editor.js") @react.component
-  external make: unit => React.element = "default"
+  external make: (~data: string, ~onChange: string => unit) => React.element = "default"
 }
 @react.component
 let make = (
@@ -659,7 +653,6 @@ let make = (
   <DisablingCover
     disabled={disablingCoverDisabled(state.saving, state.uploadProgress)}
     message={switch state.ui {
-    | WYSIWYGForm(_) => ""
     | UploadVideo => "Preparing to Upload..."
     | BlockSelector
     | EmbedForm(_)
@@ -672,7 +665,6 @@ let make = (
       <div className="content-block-creator__inner-container">
         {switch state.ui {
         | Hidden => React.null
-        | WYSIWYGForm(_a) => <Editor />
         | BlockSelector =>
           <div
             className="content-block-creator__block-content-type text-sm hidden shadow-lg mx-auto relative bg-primary-900 rounded-lg -mt-4 z-10">
