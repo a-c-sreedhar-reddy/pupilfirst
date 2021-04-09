@@ -218,6 +218,18 @@ let updateContentBlockCB = (originalContentBlock, setDirtyCB, state, send, newCo
 
   send(UpdateContentBlock(newContentBlock, dirty))
 }
+module Switch = {
+  @bs.module("react-switch") @react.component
+  external make: (
+    ~checked: bool,
+    ~onChange: bool => unit,
+    ~checkedIcon: bool=?,
+    ~uncheckedIcon: bool=?,
+    ~height: int,
+    ~width: int,
+    unit,
+  ) => React.element = "default"
+}
 
 let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) => {
   let updateContentBlockCB = updateContentBlockCB(originalContentBlock, setDirtyCB, state, send)
@@ -231,20 +243,54 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
       code => TargetContentView.embedContentBlock(code),
     )
 
-  | Markdown(markdown, true) =>
-    <CurriculumEditor__ContentBlockCreator.Editor
-      data=markdown
-      onChange={CurriculumEditor__MarkdownBlockEditor.onChange(contentBlock, updateContentBlockCB)}
-    />
-  | Markdown(markdown, false) =>
-    <CurriculumEditor__MarkdownBlockEditor markdown contentBlock updateContentBlockCB />
+  | Markdown(markdown, true) => <>
+      <CurriculumEditor__ContentBlockCreator.Editor
+        data=markdown
+        onChange={CurriculumEditor__MarkdownBlockEditor.onChange(
+          contentBlock,
+          updateContentBlockCB,
+        )}
+      />
+      <div style={ReactDOMStyle.make(~height="8px", ())} />
+      <div className="flex items-center	">
+        <Switch
+          height={14}
+          width={28}
+          checked={true}
+          checkedIcon={false}
+          uncheckedIcon={false}
+          onChange={_ => {
+            updateContentBlockCB({...contentBlock, blockType: Markdown(markdown, false)})
+          }}
+        />
+        <div className="w-2" />
+        <div className="text-green-600 font-bold text-sm"> {React.string("WYSIWYG Editor")} </div>
+      </div>
+    </>
+  | Markdown(markdown, false) => <>
+      <CurriculumEditor__MarkdownBlockEditor markdown contentBlock updateContentBlockCB />
+      <div style={ReactDOMStyle.make(~height="8px", ())} />
+      <div className="flex items-center	">
+        <Switch
+          height={14}
+          width={28}
+          checked={false}
+          checkedIcon={false}
+          uncheckedIcon={false}
+          onChange={_ => {
+            updateContentBlockCB({...contentBlock, blockType: Markdown(markdown, true)})
+          }}
+        />
+        <div className="w-2" />
+        <div className="text-grey-600 font-bold text-sm"> {React.string("WYSIWYG Editor")} </div>
+      </div>
+    </>
   | File(url, title, filename) =>
     <CurriculumEditor__FileBlockEditor url title filename contentBlock updateContentBlockCB />
   | Image(url, caption, width) =>
     <CurriculumEditor__ImageBlockEditor width url caption contentBlock updateContentBlockCB />
   }
 }
-
 @react.component
 let make = (
   ~contentBlock,

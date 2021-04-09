@@ -624,6 +624,7 @@ module Editor = {
   @module("./Editor.js") @react.component
   external make: (~data: string, ~onChange: string => unit) => React.element = "default"
 }
+
 @react.component
 let make = (
   ~target,
