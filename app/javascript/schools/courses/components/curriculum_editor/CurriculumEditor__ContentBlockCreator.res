@@ -622,7 +622,11 @@ let disablingCoverDisabled = (saving, uploadProgress) =>
   uploadProgress->Belt.Option.mapWithDefault(saving, _u => false)
 module Editor = {
   @module("./Editor.js") @react.component
-  external make: (~data: string, ~onChange: string => unit) => React.element = "default"
+  external make: (
+    ~data: string,
+    ~onChange: string => unit,
+    ~onReady: string => unit,
+  ) => React.element = "default"
 }
 
 @react.component

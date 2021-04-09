@@ -250,6 +250,7 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
           contentBlock,
           updateContentBlockCB,
         )}
+        onReady={CurriculumEditor__MarkdownBlockEditor.onChange(contentBlock, updateContentBlockCB)}
       />
       <div style={ReactDOMStyle.make(~height="8px", ())} />
       <div className="flex items-center	">
@@ -278,7 +279,10 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
           checkedIcon={false}
           uncheckedIcon={false}
           onChange={_ => {
-            updateContentBlockCB({...contentBlock, blockType: Markdown(markdown, true)})
+            updateContentBlockCB({
+              ...contentBlock,
+              blockType: Markdown(markdown |> Markdown.parse(Markdown.Permissive), true),
+            })
           }}
         />
         <div className="w-2" />
