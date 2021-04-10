@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "classic-react-with-markdown";
-
+import "./Editor.css";
 function App({ data, onChange, onReady }) {
   return (
     <div className="App">
