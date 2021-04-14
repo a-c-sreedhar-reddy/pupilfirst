@@ -279,10 +279,14 @@ let innerEditor = (originalContentBlock, contentBlock, setDirtyCB, state, send) 
           checkedIcon={false}
           uncheckedIcon={false}
           onChange={_ => {
-            updateContentBlockCB({
-              ...contentBlock,
-              blockType: Markdown(markdown |> Markdown.parse(Markdown.Permissive), true),
-            })
+            WindowUtils.confirm(
+              "Some of the information could not be represented correctly. Do you want to continue?",
+              () =>
+                updateContentBlockCB({
+                  ...contentBlock,
+                  blockType: Markdown(markdown |> Markdown.parse(Markdown.Permissive), true),
+                }),
+            )
           }}
         />
         <div className="w-2" />
